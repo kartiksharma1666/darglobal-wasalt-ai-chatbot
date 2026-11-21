@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Property Intelligence Assistant</title>
+<style>
+:root{--bg:#0b1220;--panel:#121d30;--muted:#9aabc3;--text:#eef4ff;--line:#26364e;--accent:#b9a16b;--user:#243754}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17263e,#0b1220 55%);color:var(--text);font:15px/1.55 Inter,ui-sans-serif,system-ui,Arial}
+.wrap{max-width:980px;margin:auto;padding:28px 18px 36px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border:1px solid #786c4f;border-radius:13px;display:grid;place-items:center;color:var(--accent);font-size:20px}
+h1{font-size:20px;margin:0;letter-spacing:.2px}.sub{color:var(--muted);font-size:12px}.status{border:1px solid var(--line);border-radius:99px;padding:6px 11px;color:#b7d9c4;font-size:12px}
+.hero{padding:24px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(130deg,#172740,#101a2b);margin-bottom:16px}
+.hero h2{font-size:25px;line-height:1.2;margin:0 0 8px}.hero p{color:var(--muted);margin:0;max-width:700px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.chip{background:#1d2b40;color:#dce7f7;border:1px solid #34445b;border-radius:99px;padding:8px 12px;font-size:12px;cursor:pointer}
+.chat{border:1px solid var(--line);border-radius:18px;background:rgba(16,26,43,.92);overflow:hidden}
+.messages{height:min(53vh,520px);min-height:300px;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:15px}
+.msg{max-width:85%;padding:13px 15px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere}.bot{background:#1a2a40;border:1px solid #2a3b54;align-self:flex-start}.user{background:var(--user);align-self:flex-end;border:1px solid #3b5271}
+.msg small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.sources{margin-top:10px;padding-top:9px;border-top:1px solid #34445b;font-size:12px}.sources a{color:#d6bd83;text-decoration:none;display:block;margin-top:4px}
+.composer{padding:14px;border-top:1px solid var(--line);display:flex;gap:10px}.composer textarea{resize:vertical;min-height:48px;max-height:130px;flex:1;background:#0c1626;color:var(--text);border:1px solid #34445b;border-radius:12px;padding:13px;font:inherit;outline:none}.composer button{background:var(--accent);color:#101725;border:0;border-radius:12px;padding:0 20px;font-weight:700;cursor:pointer}.composer button:disabled{opacity:.5;cursor:wait}
+.foot{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;padding:12px 4px}.foot a{color:#d6bd83}
+@media(max-width:600px){.wrap{padding:18px 12px}.hero{padding:19px}.hero h2{font-size:22px}.messages{padding:14px}.msg{max-width:96%}.composer{padding:10px}.composer button{padding:0 14px}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><div class="brand"><div class="logo">⌂</div><div><h1>Property Intelligence Assistant</h1><div class="sub">DAR GLOBAL × WASALT · PUBLIC WEB KNOWLEDGE</div></div></div><div class="status">● Assistant online</div></header>
+<section class="hero"><h2>Explore real estate with better context.</h2><p>Ask about DarGlobal developments, Wasalt listings and services, or compare what each platform offers. Answers are grounded in indexed public pages and include source links.</p>
+<div class="chips">
+<button class="chip" data-q="What is Wasalt and what services does it offer?">What is Wasalt?</button>
+<button class="chip" data-q="How can I list my property on Wasalt?">List a property</button>
+<button class="chip" data-q="What property types can I find for sale in Saudi Arabia on Wasalt?">Property types</button>
+<button class="chip" data-q="Compare DarGlobal and Wasalt based on their business models.">Compare platforms</button>
+</div></section>
+<section class="chat"><div class="messages" id="messages"><div class="msg bot"><small>PROPERTY ASSISTANT</small>Hello! I can help you explore publicly available information from DarGlobal and Wasalt. Ask me a question to get started.</div></div>
+<form class="composer" id="form"><textarea id="input" placeholder="Ask about projects, listings, locations, services..." required></textarea><button id="send">Send ↗</button></form></section>
+<div class="foot"><span>Information may change. Verify prices and availability with the source.</span><span><a href="/docs" target="_blank">API docs</a> · <a href="/api/sources" target="_blank">Indexed sources</a></span></div>
+</div>
+<script>
+const messages=document.getElementById('messages'),input=document.getElementById('input'),send=document.getElementById('send');
+function add(text,who,sources=[]){const d=document.createElement('div');d.className='msg '+who;const label=document.createElement('small');label.textContent=who==='user'?'YOU':'PROPERTY ASSISTANT';d.append(label,document.createTextNode(text));if(sources.length){const s=document.createElement('div');s.className='sources';s.textContent='SOURCES';sources.forEach(x=>{const a=document.createElement('a');a.href=x.url;a.target='_blank';a.rel='noopener';a.textContent='['+x.id+'] '+x.brand+' · '+x.title;a.append(document.createTextNode(' ↗'));s.append(a)});d.append(s)}messages.append(d);messages.scrollTop=messages.scrollHeight}
+async function ask(q){if(!q.trim())return;add(q,'user');input.value='';send.disabled=true;send.textContent='…';const wait=document.createElement('div');wait.className='msg bot';wait.textContent='Searching the public knowledge base…';messages.append(wait);messages.scrollTop=messages.scrollHeight;try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q})});const data=await r.json();wait.remove();if(!r.ok)throw new Error(data.detail||'Request failed');add(data.answer,'bot',data.sources||[])}catch(e){wait.remove();add('Sorry, something went wrong: '+e.message,'bot')}finally{send.disabled=false;send.textContent='Send ↗';input.focus()}}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();ask(input.value)});
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.q)));
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(input.value)}});
+</script></body></html>

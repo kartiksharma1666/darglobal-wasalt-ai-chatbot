@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: property-intelligence-assistant
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: openrouter/free
+      - key: INGEST_TOKEN
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /tmp/property_assistant.db
